@@ -4,7 +4,7 @@ exports.up = function(knex, Promise) {
     table.string("username").notNullable();
     table.string("password").notNullable();
     table.string("email").notNullable();
-    table.timestamps(true, true).notNullable();
+    table.timestamps(true, true);
   });
 };
 

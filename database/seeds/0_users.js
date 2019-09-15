@@ -12,7 +12,7 @@ exports.seed = function(knex, Promise) {
         },
         {
           username: "jabba_the_hutt",
-          password: "i<3han",
+          password: "iWantHan",
           email: "hutt_with2tees@gmail.com"
         },
         {
