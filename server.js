@@ -181,7 +181,7 @@ app.put("/gallery/:id", isAuthenticated, (req, res) => {
     .save(null, { method: "update" })
     .then(results => {
       console.log("results", results.toJSON());
-      res.redirect(`/`);
+      res.redirect(`/`); //res.redirect(`/${results.toJSON().id}`); <-- doesn't work, 'ERROR: Cannot GET /${results.toJSON().id}'
     })
     .catch(err => {
       res
