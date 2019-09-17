@@ -12,8 +12,6 @@ const RedisStore = require("connect-redis")(session);
 require("dotenv").config();
 
 const app = express();
-const users = require("./routes/users");
-const gallery = require("./routes/gallery");
 const PORT = 8080;
 const saltRounds = 12;
 const User = require("./database/models/User");
@@ -50,13 +48,10 @@ passport.use(
     return new User({ username: username })
       .fetch()
       .then(user => {
-        console.log(user);
-
         if (user === null) {
           return done(null, false, { message: "bad username or password" });
         } else {
           user = user.toJSON();
-
           bcrypt.compare(password, user.password).then(res => {
             if (res) {
               return done(null, user);
@@ -122,20 +117,91 @@ app.post("/register", (req, res) => {
   });
 });
 
-app.get("/secret", isAuthenticated, (req, res) => {
-  return res.send("You found the secret!");
-});
-
 app.get("/logout", (req, res) => {
   req.logout();
   res.send("logged out");
 });
 
-app.use("/users", users);
-app.use("/", gallery);
+app.get("/", (req, res) => {
+  return req.db.Image.fetchAll()
+    .then(results => {
+      res.send(results.toJSON()); //sends back an array of objects;
+    })
+    .catch(err => {
+      console.log(err);
+      res
+        .status(500)
+        .json({ message: `Something went wrong, sorry about that.` });
+    });
+});
 
-app.get("/smoke", (req, res) => {
-  res.send("smoke test");
+app.get("/gallery/:id", (req, res) => {
+  return req.db.Image.where({ id: req.params.id })
+    .fetch({ withRelated: ["user"] })
+    .then(results => {
+      res.send(results.toJSON());
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        message: `Image not found. No image with id ${req.params.id} found in database.`
+      });
+    });
+});
+
+app.get("/gallery/new", (req, res) => {
+  res.send("this will be the page where you can upload new photos.");
+});
+
+app.post("/gallery", isAuthenticated, (req, res) => {
+  return req.db.Image.forge({
+    description: req.body.description,
+    user_id: req.user.id,
+    url: req.body.url
+  })
+    .save()
+    .then(results => {
+      res.redirect(`/gallery/${results.id}`);
+    })
+    .catch(err => {
+      res.status(500).json({ message: "Image could not be added." });
+    });
+});
+
+app.get("/gallery/:id/edit", (req, res) => {
+  res.send("this will be the page where you can change an uploaded image.");
+});
+
+app.put("/gallery/:id", isAuthenticated, (req, res) => {
+  return req.db.Image.where({ id: req.params.id, user_id: req.user.id })
+    .set({
+      description: req.body.description,
+      url: req.body.url
+    })
+    .save(null, { method: "update" })
+    .then(results => {
+      console.log("results", results.toJSON());
+      res.redirect(`/`);
+    })
+    .catch(err => {
+      res
+        .status(500)
+        .json({ message: "You do not have permission to edit this image." });
+    });
+});
+
+app.delete("/gallery/:id", isAuthenticated, (req, res) => {
+  return req.db.Image.where({ id: req.params.id })
+    .destroy()
+    .then(results => {
+      res.send(`Image with id ${req.params.id} has been successfully deleted.`);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        message: `Image with id ${req.params.id} could not be deleted.`
+      });
+    });
 });
 
 app.listen(PORT, () => {
