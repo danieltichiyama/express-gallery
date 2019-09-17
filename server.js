@@ -8,6 +8,7 @@ const LocalStrategy = require("passport-local");
 const bcrypt = require("bcryptjs");
 const redis = require("redis");
 const RedisStore = require("connect-redis")(session);
+const exphbs = require("express-handlebars");
 
 require("dotenv").config();
 
@@ -22,6 +23,9 @@ app.use(methodOverride("_method"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(dbdecorator);
+
+app.engine(".hbs", exphbs({ extname: ".hbs" }));
+app.set("view engine", ".hbs");
 
 app.use(
   session({
@@ -135,7 +139,15 @@ app.get("/", (req, res) => {
     });
 });
 
+app.get("/gallery/new", (req, res) => {
+  return res.render("./new");
+});
+
 app.get("/gallery/:id", (req, res) => {
+  if (isNaN(parseInt(req.params.id))) {
+    return res.status(400).json({ message: "Error: id is not an integer." });
+  }
+
   return req.db.Image.where({ id: req.params.id })
     .fetch({ withRelated: ["user"] })
     .then(results => {
@@ -147,10 +159,6 @@ app.get("/gallery/:id", (req, res) => {
         message: `Image not found. No image with id ${req.params.id} found in database.`
       });
     });
-});
-
-app.get("/gallery/new", (req, res) => {
-  res.send("this will be the page where you can upload new photos.");
 });
 
 app.post("/gallery", isAuthenticated, (req, res) => {
@@ -169,10 +177,24 @@ app.post("/gallery", isAuthenticated, (req, res) => {
 });
 
 app.get("/gallery/:id/edit", (req, res) => {
-  res.send("this will be the page where you can change an uploaded image.");
+  return req.db.Image.where({ id: req.params.id })
+    .fetch()
+    .then(results => {
+      results = results.toJSON();
+      console.log("results", results);
+      res.render("./edit", { image: results });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        message: `Image with id ${req.params.id} could not be found.`
+      });
+    });
 });
 
 app.put("/gallery/:id", isAuthenticated, (req, res) => {
+  console.log("req.body", req.body); //comes up an empty object
+  console.log("req.user", req.user);
   return req.db.Image.where({ id: req.params.id, user_id: req.user.id })
     .set({
       description: req.body.description,
@@ -191,7 +213,7 @@ app.put("/gallery/:id", isAuthenticated, (req, res) => {
 });
 
 app.delete("/gallery/:id", isAuthenticated, (req, res) => {
-  return req.db.Image.where({ id: req.params.id })
+  return req.db.Image.where({ id: req.params.id, user_id: req.user.id })
     .destroy()
     .then(results => {
       res.send(`Image with id ${req.params.id} has been successfully deleted.`);
