@@ -8,6 +8,10 @@ class User extends bookshelf.Model {
     return true;
   }
 
+  org() {
+    return this.belongsTo("Organization");
+  }
+
   images() {
     return this.hasMany("Image");
   }

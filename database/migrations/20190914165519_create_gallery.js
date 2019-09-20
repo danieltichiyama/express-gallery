@@ -6,8 +6,20 @@ exports.up = function(knex) {
       .references("id")
       .inTable("users")
       .notNullable();
+    table
+      .string("title")
+      .notNullable()
+      .defaultTo("Untitled");
+    table
+      .string("author")
+      .notNullable()
+      .defaultTo("Anonymous");
     table.string("description");
     table.string("url").notNullable();
+    table
+      .integer("org_id")
+      .references("id")
+      .inTable("organizations");
     table.timestamps(true, true);
   });
 };

@@ -75,10 +75,15 @@ passport.use(
 passport.serializeUser(function(user, done) {
   console.log("serializing");
 
-  return done(null, { id: user.id, username: user.username });
+  return done(null, {
+    id: user.id,
+    username: user.username,
+    org_id: user.org_id
+  });
 });
 
 passport.deserializeUser(function(user, done) {
+  //returns the session object from our REDIS server and attaches it to the request (req.user), other things can be added to it if we want, but for now it only adds the user object
   console.log("deserializing");
   console.log(user);
 
@@ -121,13 +126,13 @@ app.post("/register", (req, res) => {
   });
 });
 
-app.get("/logout", (req, res) => {
+app.get("/logout", isAuthenticated, (req, res) => {
   req.logout();
   res.send("logged out");
 });
 
 app.get("/", (req, res) => {
-  return req.db.Image.fetchAll()
+  return req.db.Image.fetchAll({ withRelated: ["user", "org"] })
     .then(results => {
       res.send(results.toJSON()); //sends back an array of objects;
     })
@@ -139,11 +144,11 @@ app.get("/", (req, res) => {
     });
 });
 
-app.get("/gallery/new", (req, res) => {
+app.get("/gallery/new", isAuthenticated, (req, res) => {
   return res.render("./new");
 });
 
-app.get("/gallery/:id", (req, res) => {
+app.get("/gallery/:id", isAuthenticated, (req, res) => {
   if (isNaN(parseInt(req.params.id))) {
     return res.status(400).json({ message: "Error: id is not an integer." });
   }
@@ -165,7 +170,10 @@ app.post("/gallery", isAuthenticated, (req, res) => {
   return req.db.Image.forge({
     description: req.body.description,
     user_id: req.user.id,
-    url: req.body.url
+    author: req.body.author,
+    title: req.body.title,
+    url: req.body.url,
+    org_id: req.user.org_id
   })
     .save()
     .then(results => {
@@ -176,12 +184,11 @@ app.post("/gallery", isAuthenticated, (req, res) => {
     });
 });
 
-app.get("/gallery/:id/edit", (req, res) => {
+app.get("/gallery/:id/edit", isAuthenticated, (req, res) => {
   return req.db.Image.where({ id: req.params.id })
     .fetch()
     .then(results => {
       results = results.toJSON();
-      console.log("results", results);
       res.render("./edit", { image: results });
     })
     .catch(err => {
@@ -193,8 +200,6 @@ app.get("/gallery/:id/edit", (req, res) => {
 });
 
 app.put("/gallery/:id", isAuthenticated, (req, res) => {
-  console.log("req.body", req.body); //comes up an empty object
-  console.log("req.user", req.user);
   return req.db.Image.where({ id: req.params.id, user_id: req.user.id })
     .set({
       description: req.body.description,
@@ -202,7 +207,6 @@ app.put("/gallery/:id", isAuthenticated, (req, res) => {
     })
     .save(null, { method: "update" })
     .then(results => {
-      console.log("results", results.toJSON());
       res.redirect(`/`); //res.redirect(`/${results.toJSON().id}`); <-- doesn't work, 'ERROR: Cannot GET /${results.toJSON().id}'
     })
     .catch(err => {
@@ -213,7 +217,7 @@ app.put("/gallery/:id", isAuthenticated, (req, res) => {
 });
 
 app.delete("/gallery/:id", isAuthenticated, (req, res) => {
-  return req.db.Image.where({ id: req.params.id, user_id: req.user.id })
+  return req.db.Image.where({ id: req.params.id, org_id: req.user.org_id })
     .destroy()
     .then(results => {
       res.send(`Image with id ${req.params.id} has been successfully deleted.`);

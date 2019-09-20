@@ -8,6 +8,10 @@ class Image extends bookshelf.Model {
     return true;
   }
 
+  org() {
+    return this.belongsTo("Organization");
+  }
+
   user() {
     return this.belongsTo("User");
   }
