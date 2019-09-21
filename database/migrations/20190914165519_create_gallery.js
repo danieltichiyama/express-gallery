@@ -1,5 +1,5 @@
 exports.up = function(knex) {
-  return knex.schema.createTable("images", table => {
+  return knex.schema.createTable("gallery", table => {
     table.increments();
     table
       .integer("user_id")
@@ -14,16 +14,12 @@ exports.up = function(knex) {
       .string("author")
       .notNullable()
       .defaultTo("Anonymous");
-    table.string("description");
+    table.text("description");
     table.string("url").notNullable();
-    table
-      .integer("org_id")
-      .references("id")
-      .inTable("organizations");
     table.timestamps(true, true);
   });
 };
 
 exports.down = function(knex) {
-  return knex.schema.dropTable("images");
+  return knex.schema.dropTable("gallery");
 };

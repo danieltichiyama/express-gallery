@@ -77,8 +77,7 @@ passport.serializeUser(function(user, done) {
 
   return done(null, {
     id: user.id,
-    username: user.username,
-    org_id: user.org_id
+    username: user.username
   });
 });
 
@@ -111,7 +110,9 @@ app.post("/register", (req, res) => {
 
       return new User({
         username: req.body.username,
-        password: hash
+        password: hash,
+        org: req.body.org,
+        permissions: "user"
       })
         .save()
         .then(user => {
@@ -132,9 +133,9 @@ app.get("/logout", isAuthenticated, (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  return req.db.Image.fetchAll({ withRelated: ["user", "org"] })
+  return req.db.Gallery.fetchAll({ withRelated: ["user"] })
     .then(results => {
-      res.send(results.toJSON()); //sends back an array of objects;
+      res.render("listing", { gallery: results.toJSON() });
     })
     .catch(err => {
       console.log(err);
@@ -153,7 +154,7 @@ app.get("/gallery/:id", isAuthenticated, (req, res) => {
     return res.status(400).json({ message: "Error: id is not an integer." });
   }
 
-  return req.db.Image.where({ id: req.params.id })
+  return req.db.Gallery.where({ id: req.params.id })
     .fetch({ withRelated: ["user"] })
     .then(results => {
       res.send(results.toJSON());
@@ -167,13 +168,12 @@ app.get("/gallery/:id", isAuthenticated, (req, res) => {
 });
 
 app.post("/gallery", isAuthenticated, (req, res) => {
-  return req.db.Image.forge({
+  return req.db.Gallery.forge({
     description: req.body.description,
     user_id: req.user.id,
     author: req.body.author,
     title: req.body.title,
-    url: req.body.url,
-    org_id: req.user.org_id
+    url: req.body.url
   })
     .save()
     .then(results => {
@@ -185,7 +185,7 @@ app.post("/gallery", isAuthenticated, (req, res) => {
 });
 
 app.get("/gallery/:id/edit", isAuthenticated, (req, res) => {
-  return req.db.Image.where({ id: req.params.id })
+  return req.db.Gallery.where({ id: req.params.id })
     .fetch()
     .then(results => {
       results = results.toJSON();
@@ -200,7 +200,7 @@ app.get("/gallery/:id/edit", isAuthenticated, (req, res) => {
 });
 
 app.put("/gallery/:id", isAuthenticated, (req, res) => {
-  return req.db.Image.where({ id: req.params.id, user_id: req.user.id })
+  return req.db.Gallery.where({ id: req.params.id, user_id: req.user.id })
     .set({
       description: req.body.description,
       url: req.body.url
@@ -217,7 +217,7 @@ app.put("/gallery/:id", isAuthenticated, (req, res) => {
 });
 
 app.delete("/gallery/:id", isAuthenticated, (req, res) => {
-  return req.db.Image.where({ id: req.params.id, org_id: req.user.org_id })
+  return req.db.Gallery.where({ id: req.params.id, user_id: req.user.id })
     .destroy()
     .then(results => {
       res.send(`Image with id ${req.params.id} has been successfully deleted.`);

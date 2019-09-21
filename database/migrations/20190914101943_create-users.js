@@ -3,10 +3,8 @@ exports.up = function(knex, Promise) {
     table.increments();
     table.string("username").notNullable();
     table.string("password").notNullable();
-    table
-      .integer("org_id")
-      .references("id")
-      .inTable("organizations");
+    table.string("org");
+    table.string("orgURL");
     table.string("permissions").notNullable();
     table.timestamps(true, true);
   });

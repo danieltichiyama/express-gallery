@@ -1,33 +1,33 @@
 const bcrypt = require("bcryptjs");
-const adminPW = bcrypt.hashSync("admin", 12);
 
 function makeUsers(num, str) {
   let array = [
     {
       username: "administrator",
-      password: adminPW,
-      permissions: "site_admin"
+      password: bcrypt.hashSync("admin", 12),
+      permissions: "admin"
     },
     {
-      username: "unsplash_admin",
-      password: bcrypt.hashSync("unsplashadmin", 12),
-      permissions: "org_admin",
-      org_id: 1
+      username: "unsplash",
+      password: bcrypt.hashSync("unsplash", 12),
+      permissions: "user",
+      org: "Unsplash",
+      orgURL: "unsplash.com"
     }
   ];
+
   for (i = 0; i < num; i++) {
     let object = {};
     object.username = "user" + i;
     object.password = bcrypt.hashSync("password" + i, 12);
-    object.permissions = "std_user";
-    object["org_id"] = 1;
+    object.permissions = "user";
     array.push(object);
   }
 
   return array;
 }
 
-let users = makeUsers(4);
+let users = makeUsers(2);
 
 exports.seed = function(knex) {
   // Deletes ALL existing entries

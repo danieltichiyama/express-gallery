@@ -1,12 +1,10 @@
 const User = require("./models/User");
-const Image = require("./models/Image");
-const Org = require("./models/Organization");
+const Gallery = require("./models/Gallery");
 
 module.exports = function(req, res, next) {
   req.db = {
     User: User,
-    Image: Image,
-    Org: Org
+    Gallery: Gallery
   };
 
   next();

@@ -1,15 +1,11 @@
 const bookshelf = require("../bookshelf");
 
-class Image extends bookshelf.Model {
+class Gallery extends bookshelf.Model {
   get tableName() {
-    return "images";
+    return "gallery";
   }
   get hasTimestamps() {
     return true;
-  }
-
-  org() {
-    return this.belongsTo("Organization");
   }
 
   user() {
@@ -17,4 +13,4 @@ class Image extends bookshelf.Model {
   }
 }
 
-module.exports = bookshelf.model("Image", Image);
+module.exports = bookshelf.model("Gallery", Gallery);

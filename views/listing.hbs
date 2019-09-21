@@ -1,5 +1,10 @@
-{{#each image}}
+{{#each gallery}}
 <div class="card">
-    <a href="/gallery/{{image.id}}><img src=" {{image.url}}" alt="{{img.description}}"></a>
-    <p class="description">{{image.description}}</p>
+    <img src=" {{url}}" alt="{{description}}">
+    <p class="title">{{title}}</p>
+    <p class="author">{{author}}</p>
+    <p class="created_at">Created on {{created_at}}</p>
+    <p class="description">{{description}}</p>
+    <p class="organization">{{user.org}}</p>
 </div>
+{{/each}}
