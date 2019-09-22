@@ -43,9 +43,17 @@ function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   } else {
-    return res.redirect("/login.html");
+    return res.redirect("/login");
   }
 }
+
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.get("/login", (req, res) => {
+  res.render("login");
+});
 
 passport.use(
   new LocalStrategy(function(username, password, done) {
@@ -93,7 +101,7 @@ app.use(
   "/login",
   passport.authenticate("local", {
     successRedirect: "/",
-    failureRedirect: "/login.html"
+    failureRedirect: "/login"
   })
 );
 
@@ -117,7 +125,7 @@ app.post("/register", (req, res) => {
         .save()
         .then(user => {
           console.log(user);
-          return res.redirect("/login.html");
+          return res.redirect("/login");
         })
         .catch(err => {
           console.log(err);
@@ -154,11 +162,25 @@ app.get("/gallery/:id", isAuthenticated, (req, res) => {
     return res.status(400).json({ message: "Error: id is not an integer." });
   }
 
+  let obj = {};
+
   return req.db.Gallery.where({ id: req.params.id })
     .fetch({ withRelated: ["user"] })
     .then(results => {
-      res.send(results.toJSON());
+      console.log(results.toJSON());
+      obj.image = results.toJSON();
+      return req.db.Gallery.where({
+        user_id: results.toJSON().user_id
+      }).fetchAll();
     })
+    .then(results => {
+      console.log("other", results.toJSON());
+      obj.other = results.toJSON().filter(function(elem) {
+        return elem.id !== obj.image.id;
+      });
+      res.render(`detail`, obj);
+    })
+
     .catch(err => {
       console.log(err);
       res.status(500).json({
@@ -201,15 +223,21 @@ app.get("/gallery/:id/edit", isAuthenticated, (req, res) => {
 
 app.put("/gallery/:id", isAuthenticated, (req, res) => {
   return req.db.Gallery.where({ id: req.params.id, user_id: req.user.id })
-    .set({
-      description: req.body.description,
-      url: req.body.url
-    })
-    .save(null, { method: "update" })
+    .save(
+      {
+        title: req.body.title,
+        author: req.body.author,
+        description: req.body.description,
+        url: req.body.url
+      },
+      { method: "update" }
+    )
     .then(results => {
-      res.redirect(`/`); //res.redirect(`/${results.toJSON().id}`); <-- doesn't work, 'ERROR: Cannot GET /${results.toJSON().id}'
+      console.log(results.toJSON());
+      res.redirect(`/gallery/${results.toJSON().id}`);
     })
     .catch(err => {
+      console.log(err);
       res
         .status(500)
         .json({ message: "You do not have permission to edit this image." });

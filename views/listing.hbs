@@ -1,10 +1,10 @@
-{{#each gallery}}
-<div class="card">
-    <img src=" {{url}}" alt="{{description}}">
-    <p class="title">{{title}}</p>
-    <p class="author">{{author}}</p>
-    <p class="created_at">Created on {{created_at}}</p>
-    <p class="description">{{description}}</p>
-    <p class="organization">{{user.org}}</p>
+<div id="grid">
+    {{#each gallery}}
+    <div class="card"><a href="/gallery/{{id}}">
+            <div class="cardContent">
+                <img src=" {{url}}" alt="{{description}}">
+            </div>
+        </a>
+    </div>
+    {{/each}}
 </div>
-{{/each}}

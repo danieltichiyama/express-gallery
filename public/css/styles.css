@@ -1,0 +1,51 @@
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+  grid-auto-rows: 20px; }
+  #grid .card {
+    width: inherit; }
+    #grid .card img {
+      width: 100%;
+      object-fit: contain; }
+
+#detailContent {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2fr 1fr; }
+  #detailContent #main {
+    width: inherit;
+    grid-row-end: span 2;
+    height: 80vh;
+    display: grid;
+    box-shadow: 0px 0px 50px 2px rgba(0, 0, 0, 0.15);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px; }
+    #detailContent #main img {
+      height: 95%;
+      max-width: 95%;
+      object-fit: contain;
+      justify-self: center;
+      margin-top: 15px;
+      margin-bottom: 20px; }
+  #detailContent #info {
+    width: inherit;
+    grid-row-end: span 2;
+    height: 20%;
+    box-shadow: 0px 0px 50px 2px rgba(0, 0, 0, 0.15);
+    margin-top: 20px;
+    padding: 20px;
+    font-family: Arial, Helvetica, sans-serif; }
+  #detailContent #other {
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: scroll;
+    align-items: center; }
+    #detailContent #other .otherCard {
+      width: 300px;
+      margin-bottom: 20px; }
+      #detailContent #other .otherCard img {
+        object-fit: contain;
+        width: 100%; }

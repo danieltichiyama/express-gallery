@@ -1,0 +1,24 @@
+<div id="detailContent">
+    <div id="subContainer">
+
+        <div id="main">
+            <img src="{{image.url}}" alt="{{image.description}}">
+        </div>
+        <div id="info">
+            <h2 id="title">{{image.title}}</h2>
+            <h4 id="author">by {{image.author}}</h4>
+            <p id="description">{{image.description}}</p>
+
+        </div>
+    </div>
+
+    <div id="other">
+        {{#each other}}
+        <div class="otherCard">
+            <a href="/gallery/{{id}}">
+                <img src="{{url}}" alt="{{description}}">
+            </a>
+        </div>
+        {{/each}}
+    </div>
+</div>
