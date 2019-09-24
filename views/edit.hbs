@@ -1,3 +1,5 @@
+{{> header_part}}
+
 <form action="/gallery/{{image.id}}?_method=PUT" method="POST">
     <input type="text" name="title" value="{{image.title}}" id="title">
     <input type="text" name="author" value="{{image.author}}" id="author">

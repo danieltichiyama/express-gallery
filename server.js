@@ -43,9 +43,9 @@ function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   } else {
-    return res.redirect("/login");
+    return next();
   }
-}
+} //is this even useful anymore??
 
 app.get("/register", (req, res) => {
   res.render("register");
@@ -137,13 +137,16 @@ app.post("/register", (req, res) => {
 
 app.get("/logout", isAuthenticated, (req, res) => {
   req.logout();
-  res.send("logged out");
+  res.redirect("/");
 });
 
-app.get("/", (req, res) => {
+app.get("/", isAuthenticated, (req, res) => {
   return req.db.Gallery.fetchAll({ withRelated: ["user"] })
     .then(results => {
-      res.render("listing", { gallery: results.toJSON() });
+      res.render("listing", {
+        gallery: results.toJSON(),
+        isAuthenticated: req.isAuthenticated()
+      });
     })
     .catch(err => {
       console.log(err);
@@ -154,7 +157,10 @@ app.get("/", (req, res) => {
 });
 
 app.get("/gallery/new", isAuthenticated, (req, res) => {
-  return res.render("./new");
+  if (!req.isAuthenticated()) {
+    return res.redirect(403, "/"); //redirects to a page that you have to click on the link.q
+  }
+  return res.render("./new", { isAuthenticated: req.isAuthenticated() });
 });
 
 app.get("/gallery/:id", isAuthenticated, (req, res) => {
@@ -162,19 +168,21 @@ app.get("/gallery/:id", isAuthenticated, (req, res) => {
     return res.status(400).json({ message: "Error: id is not an integer." });
   }
 
-  let obj = {};
+  let obj = { isAuthenticated: req.isAuthenticated() };
 
   return req.db.Gallery.where({ id: req.params.id })
     .fetch({ withRelated: ["user"] })
     .then(results => {
       console.log(results.toJSON());
       obj.image = results.toJSON();
+      if (obj.image.user_id === req.user.id) {
+        obj.canEdit = true;
+      }
       return req.db.Gallery.where({
         user_id: results.toJSON().user_id
       }).fetchAll();
     })
     .then(results => {
-      console.log("other", results.toJSON());
       obj.other = results.toJSON().filter(function(elem) {
         return elem.id !== obj.image.id;
       });

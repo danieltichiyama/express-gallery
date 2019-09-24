@@ -1,3 +1,9 @@
+{{> header_part}}
+
+{{#if message}}
+<p>{{message}}</p>
+{{/if}}
+
 <div id="grid">
     {{#each gallery}}
     <div class="card"><a href="/gallery/{{id}}">

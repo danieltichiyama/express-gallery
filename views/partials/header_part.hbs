@@ -1,4 +1,25 @@
 <header>
-
-
+    <h1>Express Gallery</h1>
+    <p>Welcome. Stay a while.</p>
+    {{#if isAuthenticated}}
+    <form action="/user" method="GET">
+        <button type="submit">My Profile</button>
+    </form>
+    <form action="/logout" method="get">
+        <button type="submit">Log out</button>
+    </form>
+    <form action="/gallery/new" method="GET">
+        <button type="submit">Upload</button>
+    </form>
+    {{else}}
+    <form action="/register" method="GET">
+        <button type="submit">Register</button>
+    </form>
+    <form action="/login" method="GET">
+        <button type="submit">Sign in</button>
+    </form>
+    <form action="/gallery/new" method="GET">
+        <button type="submit">Upload</button>
+    </form>
+    {{/if}}
 </header>

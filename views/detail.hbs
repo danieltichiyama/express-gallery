@@ -1,3 +1,5 @@
+{{> header_part}}
+
 <div id="detailContent">
     <div id="subContainer">
 
@@ -8,6 +10,15 @@
             <h2 id="title">{{image.title}}</h2>
             <h4 id="author">by {{image.author}}</h4>
             <p id="description">{{image.description}}</p>
+
+            {{#if canEdit}}
+            <form action="/gallery/{{image.id}}/edit" method="get">
+                <button type="submit">Edit</button>
+            </form>
+            <form action="/gallery/{{image.id}}_?=DELETE" method="POST">
+                <button type="submit">Delete</button>
+            </form>
+            {{/if}}
 
         </div>
     </div>
